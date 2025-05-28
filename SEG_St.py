@@ -8,12 +8,7 @@ from sklearn.linear_model import LinearRegression
 from streamlit_option_menu import option_menu
 from pyproj import Transformer
 import io
-import rasterio
-import geopandas as gpd
-from shapely.geometry import Point
-import folium
-from streamlit_folium import st_folium
-from folium.plugins import MarkerCluster
+
 
 
 # ===============================
