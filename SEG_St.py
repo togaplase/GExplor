@@ -33,7 +33,7 @@ def remove_outliers(df, column):
 # SIDEBAR
 # ===============================
 
-st.sidebar.image("D:/PycharmProjects/pythonProject/SEG/streamlit-mark-color.png", width=150)
+st.sidebar.image("streamlit-mark-color.png", width=150)
 st.sidebar.header('GExplor')
 st.sidebar.markdown("*Comprehensive Gravity Exploration with Data Processing and Interactive Mapping*")
 
