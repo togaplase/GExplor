@@ -14,12 +14,7 @@ from shapely.geometry import Point
 import folium
 from streamlit_folium import st_folium
 from folium.plugins import MarkerCluster
-# Interpolasi manual (pada bagian Map)
-from scipy.interpolate import LinearNDInterpolator, CloughTocher2DInterpolator, NearestNDInterpolator
 
-from scipy.interpolate import interp2d
-from mpl_toolkits.mplot3d import Axes3D
-from scipy.optimize import minimize
 
 # ===============================
 # Fungsi-fungsi tambahan
