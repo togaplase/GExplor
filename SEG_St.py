@@ -11,9 +11,9 @@ import io
 from graphics import imshow_hs
 
 
-# ===============================
+
 # Fungsi-fungsi tambahan
-# ===============================
+
 def utm_to_latlon(easting, northing, zone, datum, hemisphere):
     utm_crs = f"+proj=utm +zone={zone} +datum={datum} {'+south' if hemisphere.lower() == 'south' else ''}"
     transformer = Transformer.from_crs(utm_crs, f"+proj=latlong +datum={datum}", always_xy=True)
@@ -35,9 +35,9 @@ def interpolate_manual(method, grid_x, grid_y, points, values):
     return grid_z
 
 
-# ===============================
+
 # Sidebar dan Menu Navigasi
-# ===============================
+
 
 
 with st.sidebar:
@@ -72,9 +72,9 @@ selected2 = option_menu(
 )
 
 
-# ===============================
+
 # Home
-# ===============================
+
 if selected2 == "Home":
     st.title("GExplor")
     st.markdown("### Comprehensive Gravity Exploration with Data Processing and Interactive Mapping")
@@ -110,9 +110,8 @@ if selected2 == "Home":
 
 
 
-# ===============================
 # Upload dan Proses Data
-# ===============================
+
 elif selected2 == "Upload":
     st.title("Upload Your Gravity Data")
     uploaded_files = st.file_uploader("Upload one or more Excel files", type=['xlsx'], accept_multiple_files=True)
@@ -125,9 +124,9 @@ elif selected2 == "Upload":
         try:
             df = pd.read_excel(selected_file_obj)
 
-            # =====================================
+         
             # Konstanta Koordinat
-            # =====================================
+    =
             # zone = 48
             # datum = 'WGS84'
             # hemisphere = 'south'
@@ -176,9 +175,8 @@ elif selected2 == "Upload":
 
 
 
-# ===============================
 # Graphics
-# ===============================
+
 elif selected2 == "Graphics":
     st.title("Paransis Regression Visualization")
 
@@ -228,9 +226,9 @@ elif selected2 == "Graphics":
     # Tampilkan hasil
     st.dataframe(df)
 
-# ===============================
+
 # Map Visualization
-# ===============================
+
 elif selected2 == "Map":
     st.title("Gravity Anomaly Map")
 
@@ -240,9 +238,9 @@ elif selected2 == "Map":
 
     df = st.session_state.df.copy()
 
-    # ===============================
+
     # PEMETAAN BOUGUER
-    # ===============================
+
 
     # Streamlit sidebar dan konten utama
     if st.sidebar.checkbox("Free Air Anomaly Map"):
