@@ -6,3 +6,4 @@ scikit-learn
 pyproj
 scipy
 streamlit-option-menu
+skimage
