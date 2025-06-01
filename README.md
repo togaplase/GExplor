@@ -1,4 +1,4 @@
-# GP_st - Streamlit App for Marking Colors
+# GP_st - Streamlit App for Gravity Processing and Visualization
 
 This is a Streamlit-based application for Gravity Processing and Visualization.
 
