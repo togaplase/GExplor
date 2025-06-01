@@ -6,6 +6,6 @@ scikit-learn
 pyproj
 scipy
 streamlit-option-menu
-skimage
-scikit-image
-rasterio
+scikit-image   
+interpies
+gdal
