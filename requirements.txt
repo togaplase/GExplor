@@ -8,3 +8,4 @@ scipy
 streamlit-option-menu
 skimage
 interpies
+scikit-image
