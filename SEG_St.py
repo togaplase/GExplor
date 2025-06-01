@@ -8,7 +8,7 @@ from sklearn.linear_model import LinearRegression
 from streamlit_option_menu import option_menu
 from pyproj import Transformer
 import io
-
+from graphics import imshow_hs
 
 
 # ===============================
@@ -318,44 +318,148 @@ elif selected2 == "Map":
 
             df_filtered = df[(df['Bouguer Anomaly'] >= anomaly_min) & (df['Bouguer Anomaly'] <= anomaly_max)]
 
-            interp_method = st.sidebar.selectbox("Select Interpolation Method", ["cubic", "linear", "nearest"])
-            grid_resolution = st.sidebar.slider("Grid Resolution", 100, 1500, 500, 100)
+            # Pilihan metode interpolasi
+            interp_method = st.sidebar.selectbox("Interpolation Method", ["cubic", "linear", "nearest"], index=0)
+            grid_resolution = st.sidebar.slider("Grid Resolution", 100, 1500, 500, step=100)
 
+            # Buat grid interpolasi
             grid_x, grid_y = np.meshgrid(
-                np.linspace(df_filtered[x_column].min(), df_filtered[x_column].max(), grid_resolution),
-                np.linspace(df_filtered[y_column].min(), df_filtered[y_column].max(), grid_resolution)
+                np.linspace(df_filtered['Longitude'].min(), df_filtered['Longitude'].max(), grid_resolution),
+                np.linspace(df_filtered['Latitude'].min(), df_filtered['Latitude'].max(), grid_resolution)
             )
 
-            points = df_filtered[[x_column, y_column]].values
-            values = df_filtered['Bouguer Anomaly'].values
-            grid_z = griddata(points, values, (grid_x, grid_y), method=interp_method)
+            # Ambil titik dan nilai
+            points = df_filtered[["Longitude", "Latitude"]].values
+            values = df_filtered["G Free Air Anomaly"].values
 
-            #
-            colormap = st.sidebar.selectbox("Select Colormap", ["RdBu_r", "viridis", "magma", "bwr", "jet", "hsv"], index=0)
-            # Optional Gaussian Smoothing
-            # apply_smoothing = st.sidebar.checkbox("Apply Gaussian Smoothing", value=False)
-            # if apply_smoothing:
-            #     from scipy.ndimage import gaussian_filter
-            #     sigma = st.sidebar.slider("Smoothing Level (Sigma)", 0.5, 5.0, 1.0)
-            #     grid_z = gaussian_filter(grid_z, sigma=sigma)
+            # Interpolasi manual menggunakan griddata
+            grid_z = interpolate_manual(interp_method, grid_x, grid_y, points, values)
 
-            fig, ax = plt.subplots(figsize=(10, 6))
-            cs = ax.contourf(grid_x, grid_y, grid_z, cmap=colormap, levels=20)
+            # Pilihan colormap
+            colormap = st.sidebar.selectbox("Select Colormap", options=["RdBu_r", "rainbow", "bwr", "jet", "hsv"],
+                                            index=0)
 
-            cbar = fig.colorbar(cs, ax=ax, label="Bouguer Anomaly (mGal)")
+            # Tabs untuk memisahkan visualisasi
+            tab1, tab2 = st.tabs(["Standard Visualization", "Oasis Montaj Style"])
 
-            show_points = st.sidebar.checkbox("Show Measurement Points", value=True)
-            if show_points:
-                ax.scatter(df_filtered[x_column], df_filtered[y_column], color='black', s=10, label="Measurement Points")
-                ax.legend(loc='upper right')
+            with tab1:
+                st.subheader("Free Air Anomaly Map (Standard)")
 
-            st.pyplot(fig)
+                show_contour_lines = st.checkbox("Show Contour Lines", value=True, key="contour_std")
+                show_points = st.checkbox("Show Measurement Points", value=True, key="points_std")
 
+                # Hitung gradien untuk hillshade
+                gy, gx = np.gradient(grid_z)
+                hillshade = (np.sin(np.radians(315)) * gx + np.cos(np.radians(315)) * gy)
+                hillshade = (hillshade - hillshade.min()) / (hillshade.max() - hillshade.min())
+
+                fig, ax = plt.subplots(figsize=(12, 8))
+
+                # Plot hillshade sebagai background
+                ax.imshow(hillshade, extent=[grid_x.min(), grid_x.max(), grid_y.min(), grid_y.max()],
+                          cmap='gray', alpha=0.4, origin='lower')
+
+                # Plot utama: kontur warna
+                cs = ax.contourf(grid_x, grid_y, grid_z, cmap=colormap, levels=20, alpha=0.8)
+                cbar = fig.colorbar(cs, ax=ax, label="Free Air Anomaly (mGal)")
+
+                # Plot kontur garis
+                if show_contour_lines:
+                    cs_lines = ax.contour(grid_x, grid_y, grid_z, colors='black', linewidths=0.5, levels=10)
+                    ax.clabel(cs_lines, inline=True, fontsize=8)
+
+                # Titik pengukuran
+                if show_points:
+                    ax.scatter(df_filtered['Longitude'], df_filtered['Latitude'], color='black', s=10,
+                               label="Measurement Points")
+                    ax.legend()
+
+                ax.set_xlabel("Longitude")
+                ax.set_ylabel("Latitude")
+                ax.set_title("Free Air Anomaly Map with Hillshade")
+                plt.tight_layout()
+                st.pyplot(fig)
+
+                # Histogram
+                if st.checkbox("Show Histogram", value=True, key="hist_std"):
+                    st.subheader("Distribution of Free Air Anomaly Values")
+                    fig_hist, ax_hist = plt.subplots()
+                    ax_hist.hist(values, bins=30, color='skyblue', edgecolor='black')
+                    ax_hist.set_xlabel("Free Air Anomaly (mGal)")
+                    ax_hist.set_ylabel("Frequency")
+                    ax_hist.set_title("Histogram of Anomaly Values")
+                    st.pyplot(fig_hist)
+
+            with tab2:
+                st.subheader("Free Air Anomaly Map (Oasis Montaj Style)")
+
+                # Sidebar controls
+                st.sidebar.header("Oasis Montaj Style Options")
+
+                cmap_options = ['geosoft', 'jet', 'viridis', 'plasma', 'inferno', 'RdBu_r', 'bwr']
+                selected_cmap = st.sidebar.selectbox("Pilih Colormap", options=cmap_options, index=0)
+
+                enable_hillshade = st.sidebar.checkbox("Gunakan Hillshade", value=True)
+
+                hillshade_contrast = st.sidebar.slider("Kontras Hillshade", min_value=0.1, max_value=2.0, value=1.2,
+                                                       step=0.1)
+
+                blend_mode = st.sidebar.selectbox("Blend Mode", options=['alpha', 'hsv', 'overlay', 'soft'], index=0)
+
+                alpha_value = st.sidebar.slider("Transparansi Warna (Alpha)", min_value=0.0, max_value=1.0, value=0.7,
+                                                step=0.05)
+
+                contour_levels = st.sidebar.slider("Jumlah Kontur", min_value=5, max_value=50, value=24, step=1)
+
+                show_cb_contours = st.sidebar.checkbox("Tampilkan Kontur di Colorbar", value=False)
+
+                # Plot dengan imshow_hs
+                fig_om, ax_om = plt.subplots(figsize=(12, 8))
+
+                imshow_hs(
+                    grid_z,
+                    ax=ax_om,
+                    cmap=selected_cmap,
+                    cmap_norm='equalize',
+                    hs=enable_hillshade,
+                    zf=5,
+                    azdeg=315,
+                    altdeg=45,
+                    dx=1, dy=1,
+                    hs_contrast=hillshade_contrast,
+                    cmap_brightness=1.0,
+                    blend_mode=blend_mode,
+                    alpha=alpha_value,
+                    contours=contour_levels,
+                    colorbar=True,
+                    cb_contours=show_cb_contours,
+                    title="Free Air Anomaly Map",
+                    origin='lower',
+                    extent=[grid_x.min(), grid_x.max(), grid_y.min(), grid_y.max()]
+                )
+
+                # Titik pengukuran
+                if st.sidebar.checkbox("Show Measurement Points", value=True, key="points_om"):
+                    ax_om.scatter(df_filtered['Longitude'], df_filtered['Latitude'], color='white', s=10,
+                                  label="Measurement Points", edgecolors='black')
+                    ax_om.legend()
+
+                plt.tight_layout()
+                st.pyplot(fig_om)
+
+                # Histogram tetap bisa ditampilkan
+                if st.checkbox("Show Histogram", value=True, key="hist_om"):
+                    st.subheader("Distribution of Free Air Anomaly Values")
+                    fig_hist, ax_hist = plt.subplots()
+                    ax_hist.hist(values, bins=20, color='skyblue', edgecolor='black')
+                    ax_hist.set_xlabel("Free Air Anomaly (mGal)")
+                    ax_hist.set_ylabel("Frequency")
+                    ax_hist.set_title("Histogram of Anomaly Values")
+                    st.pyplot(fig_hist)
 
         else:
-            st.error("Required columns for Bouguer Anomaly calculation not found in your data.")
+            st.warning("Kolom yang dibutuhkan untuk perhitungan FAA tidak tersedia.")
 
-        # Misal fig adalah hasil plot kamu
         buf = io.BytesIO()
         fig.savefig(buf, format="png")
         st.download_button(
