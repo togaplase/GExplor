@@ -7,4 +7,4 @@ pyproj
 scipy
 streamlit-option-menu
 scikit-image
-
+typing
