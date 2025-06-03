@@ -98,11 +98,11 @@ def imshow_hs(
     std_range=1,
     figsize=(8, 8),
     title=None,
-    extent=None,  # tambahkan parameter extent untuk plotting geospatial-like
+    extent=None,
     **kwargs,
 ):
     """
-    Menampilkan citra 2D dengan hillshade (tanpa interpies).
+    Menampilkan citra 2D dengan hillshade.
     """
     if isinstance(source, np.ndarray):
         data = source.copy()
@@ -117,24 +117,27 @@ def imshow_hs(
     else:
         fig = ax.get_figure()
 
-    # Pilih colormap
-    my_cmap = plt.colormaps() if cmap in plt.colormaps() else plt.get_cmap(cmap)
+    # Daftar colormap yang valid
+    valid_cmaps = plt.colormaps()
+    if cmap not in valid_cmaps:
+        st.warning(f"Colormap '{cmap}' tidak dikenali. Menggunakan 'viridis' sebagai ganti.")
+        cmap = 'viridis'
+
+    my_cmap = plt.get_cmap(cmap)
 
     # Normalisasi colormap
     if cmap_norm == 'equalize':
         vmin, vmax = np.percentile(data.compressed(), [2, 98])
-        norm = colors.Normalize(vmin=vmin, vmax=vmax)
+        norm = plt.Normalize(vmin=vmin, vmax=vmax)
     elif cmap_norm == 'auto':
         vmin, vmax = np.nanmin(data), np.nanmax(data)
-        norm = colors.Normalize(vmin=vmin, vmax=vmax)
+        norm = plt.Normalize(vmin=vmin, vmax=vmax)
     else:
         norm = None
 
     # Hillshade
     if hs:
         ls = LightSource(azdeg=azdeg, altdeg=altdeg)
-        shaded = ls.hillshade(data, vert_exag=zf, dx=dx, dy=dy, fraction=hs_contrast)
-
         rgb = ls.shade(
             data,
             cmap=my_cmap,
@@ -173,7 +176,6 @@ def imshow_hs(
         ax.set_title(title)
 
     return ax
-
 # ===============================
 # Sidebar dan Menu Navigasi
 # ===============================
