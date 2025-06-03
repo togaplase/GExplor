@@ -1,30 +1,35 @@
-# GExplor - Streamlit App for Gravity Processing and Visualization
+# GExplor – Streamlit App for Gravity Processing and Visualization
 
-This is a Streamlit-based application for Gravity Processing and Visualization.
+**GExplor** adalah aplikasi berbasis [Streamlit](https://streamlit.io/) untuk memproses dan memvisualisasikan data gravitasi. Aplikasi ini mendukung pemrosesan anomali gravitasi seperti Free Air dan Bouguer, interpolasi spasial, serta visualisasi peta interaktif.
 
-## Screenshot
-https://raw.githubusercontent.com/togaplase/GExplore.png
+---
 
+## 📸 Screenshot
 
-## Prerequisites
+![App Screenshot](https://raw.githubusercontent.com/togaplase/GExplor/main/GExplore.png)
 
-Before running the app, ensure you have the following installed:
+---
 
-- Python 3.7 or higher
+## ✅ Prerequisites
+
+Sebelum menjalankan aplikasi ini, pastikan Anda telah menginstal:
+
+- Python 3.7 atau lebih tinggi
 - pip (Python package installer)
 
-## Installation
+---
 
-1. Clone the repository:
+## 🛠️ Installation
+
+1. Clone repositori ini:
+
    ```bash
    git clone https://github.com/togaplase/GExplor.git
-   cd GP_st
+   cd GExplor
+2. Install semua dependensi yang dibutuhkan:
 
+   pip install -r requirements.txt
 
-2. Install the required dependencies:
-pip install -r requirements.txt
+3. Jalankan aplikasi Streamlit:
 
-3. Run the app:
-streamlit run SEG_St.py
-
-This will launch the Streamlit app in your browser.
+   streamlit run SEG_St.py
