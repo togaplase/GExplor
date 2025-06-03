@@ -6,7 +6,7 @@
 
 ## 📸 Screenshot
 
-![App Screenshot](GExplor/ChatGPT%20Image%20May%203,%202025,%2009_26_55%20AM.png)
+![App Screenshot](GExplor/GExplore.png)
 
 
 
