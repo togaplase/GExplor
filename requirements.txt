@@ -10,4 +10,3 @@ scikit-image
 typing
 openpyxl
 interpies
-GDAL
