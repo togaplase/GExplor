@@ -8,6 +8,7 @@
 
 ![App Screenshot](https://raw.githubusercontent.com/togaplase/GExplor/main/GExplore.png)
 
+
 ---
 
 ## ✅ Prerequisites
