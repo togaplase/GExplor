@@ -137,7 +137,10 @@ def imshow_hs(
 
     # Hillshade
     if hs:
-        ls = LightSource(azdeg=azdeg, altdeg=altdeg)
+        # Gunakan mode blending yang valid
+    if blend_mode not in ['hsv', 'overlay', 'soft', 'multiply']:
+        blend_mode = 'hsv'  # fallback ke mode yang valid
+
         rgb = ls.shade(
             data,
             cmap=my_cmap,
