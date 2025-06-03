@@ -3,7 +3,7 @@
 This is a Streamlit-based application for Gravity Processing and Visualization.
 
 ## Screenshot
-(https://raw.githubusercontent.com/togaplase/GExplor/main/GExplore.png)
+https://raw.githubusercontent.com/togaplase/GExplor/GExplore.png
 
 
 ## Prerequisites
