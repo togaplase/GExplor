@@ -150,7 +150,7 @@ def imshow_hs(  # noqa: PLR0912, PLR0913, PLR0915
     title=None,
     **kwargs,):
 
-        if isinstance(source, interpies.Grid):
+    if isinstance(source, interpies.Grid):
         kwargs['extent'] = source.extent
         data = source.data
         if title is None:
