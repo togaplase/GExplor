@@ -6,7 +6,8 @@
 
 ## 📸 Screenshot
 
-![App Screenshot](GExplor/GExplore.png)
+<img src="GExplor/GExplore.png" alt="App Screenshot" width="800"/>
+
 
 
 
