@@ -1,7 +1,8 @@
 streamlit
 pandas
-numpy
 matplotlib
+numpy
+scikit-image
 scipy
 pyproj
 scikit-learn
