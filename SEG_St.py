@@ -22,7 +22,10 @@ from scipy.interpolate import interp2d
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import minimize
 from typing import Literal
-
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import colors, cm, contour
+from matplotlib.colors import LightSource
 # ===============================
 # Fungsi-fungsi tambahan
 # ===============================
@@ -71,10 +74,7 @@ def save_gxf(grid_z, x_coords, y_coords, filename="output.gxf", no_data=-99999):
             f.write(" ".join([f"{val:.2f}" for val in row]) + "\n")
 
     return filename
-import numpy as np
-import matplotlib.pyplot as plt
-from matplotlib import colors, cm, contour
-from matplotlib.colors import LightSource
+
 
 def imshow_hs(
     source,
@@ -89,7 +89,7 @@ def imshow_hs(
     dy=1,
     hs_contrast=1.5,
     cmap_brightness=1.0,
-    blend_mode='alpha',
+    blend_mode='hsv',  # Sudah diganti ke mode yang valid
     alpha=0.7,
     contours=False,
     colorbar=True,
@@ -104,12 +104,10 @@ def imshow_hs(
     """
     Menampilkan citra 2D dengan hillshade.
     """
-    if isinstance(source, np.ndarray):
-        data = source.copy()
-    else:
-        raise ValueError("Input source harus berupa numpy array.")
+    if not isinstance(source, (np.ndarray, np.ma.MaskedArray)):
+        raise ValueError("Input source harus berupa numpy array atau masked array.")
 
-    data = np.ma.masked_array(data, np.isnan(data))
+    data = np.ma.masked_array(source, np.isnan(source))
 
     # Buat figure atau gunakan axis yang sudah ada
     if ax is None:
@@ -117,12 +115,11 @@ def imshow_hs(
     else:
         fig = ax.get_figure()
 
-    # Daftar colormap yang valid
+    # Validasi colormap
     valid_cmaps = plt.colormaps()
     if cmap not in valid_cmaps:
-        st.warning(f"Colormap '{cmap}' tidak dikenali. Menggunakan 'viridis' sebagai ganti.")
+        print(f"Colormap '{cmap}' tidak dikenali. Menggunakan 'viridis' sebagai ganti.")
         cmap = 'viridis'
-
     my_cmap = plt.get_cmap(cmap)
 
     # Normalisasi colormap
@@ -138,9 +135,14 @@ def imshow_hs(
     # Hillshade
     if hs:
         # Gunakan mode blending yang valid
-    if blend_mode not in ['hsv', 'overlay', 'soft', 'multiply']:
-        blend_mode = 'hsv'  # fallback ke mode yang valid
+        valid_blend_modes = ['hsv', 'overlay', 'soft', 'multiply']
+        if blend_mode not in valid_blend_modes:
+            blend_mode = 'hsv'
 
+        # Inisialisasi LightSource
+        ls = LightSource(azdeg=azdeg, altdeg=altdeg)
+
+        # Gambar hillshade
         rgb = ls.shade(
             data,
             cmap=my_cmap,
