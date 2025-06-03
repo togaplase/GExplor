@@ -10,5 +10,3 @@ scikit-image
 typing
 openpyxl
 interpies
-rasterio version > 1.0 (alpha)
-gdal
