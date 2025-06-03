@@ -1,13 +1,10 @@
-# GP_st - Streamlit App for Gravity Processing and Visualization
+# GExplor - Streamlit App for Gravity Processing and Visualization
 
 This is a Streamlit-based application for Gravity Processing and Visualization.
 
-
-
 ## Screenshot
 
-![App Screenshot](https://raw.githubusercontent.com/togaplase/GExplor/main/ChatGPT_Image_May_3_2025_09_26_55_AM.png)
-
+![App Screenshot](https://raw.githubusercontent.com/togaplase/GExplor/main/GExplore.png)
 
 ## Prerequisites
 
@@ -20,8 +17,9 @@ Before running the app, ensure you have the following installed:
 
 1. Clone the repository:
    ```bash
-   git clone https://github.com/togaplase/GP_st.git
+   git clone https://github.com/togaplase/GExplor.git
    cd GP_st
+
 
 2. Install the required dependencies:
 pip install -r requirements.txt
