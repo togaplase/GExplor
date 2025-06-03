@@ -7,5 +7,4 @@ pyproj
 scipy
 streamlit-option-menu
 scikit-image
-GDAL==3.8.4
-rasterio
+
