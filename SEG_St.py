@@ -21,6 +21,7 @@ from scipy.interpolate import LinearNDInterpolator, CloughTocher2DInterpolator, 
 from scipy.interpolate import interp2d
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import minimize
+from typing import Literal
 
 # ===============================
 # Fungsi-fungsi tambahan
