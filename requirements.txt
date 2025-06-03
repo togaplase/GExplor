@@ -2,9 +2,12 @@ streamlit
 pandas
 numpy
 matplotlib
-scikit-learn
-pyproj
 scipy
+pyproj
+scikit-learn
 streamlit-option-menu
-scikit-image
-GDAL==3.8.4
+rasterio
+geopandas
+shapely
+folium
+streamlit-folium
