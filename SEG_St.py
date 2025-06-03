@@ -17,7 +17,7 @@ from folium.plugins import MarkerCluster
 # Interpolasi manual (pada bagian Map)
 from scipy.interpolate import LinearNDInterpolator, CloughTocher2DInterpolator, NearestNDInterpolator
 # Import fungsi imshow_hs dari graphics.py
-from graphics import imshow_hs
+# from graphics import imshow_hs
 from scipy.interpolate import interp2d
 from mpl_toolkits.mplot3d import Axes3D
 from scipy.optimize import minimize
@@ -126,7 +126,30 @@ def save_gxf(grid_z, x_coords, y_coords, filename="output.gxf", no_data=-99999):
             f.write(" ".join([f"{val:.2f}" for val in row]) + "\n")
 
     return filename
-
+def imshow_hs(  # noqa: PLR0912, PLR0913, PLR0915
+    source,
+    ax=None,
+    cmap='geosoft',
+    cmap_norm='equalize',
+    hs=True,
+    zf=10,
+    azdeg=45,
+    altdeg=45,
+    dx=1,
+    dy=1,
+    hs_contrast=1.5,
+    cmap_brightness=1.0,
+    blend_mode: Literal['alpha', 'hsv', 'overlay', 'soft'] = 'alpha',
+    alpha=0.7,
+    contours=False,
+    colorbar=True,
+    cb_contours=False,
+    cb_ticks='linear',
+    std_range=1,
+    figsize=(8, 8),
+    title=None,
+    **kwargs,
+)
 # ===============================
 # Sidebar dan Menu Navigasi
 # ===============================
