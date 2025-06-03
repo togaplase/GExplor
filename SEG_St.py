@@ -628,7 +628,6 @@ elif selected2 == "Map":
                     cb_contours=show_cb_contours,
                     title="Free Air Anomaly Map",
                     origin='lower',
-                    extent=[grid_x.min(), grid_x.max(), grid_y.min(), grid_y.max()]
                 )
 
                 # Titik pengukuran
