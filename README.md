@@ -2,9 +2,12 @@
 
 This is a Streamlit-based application for Gravity Processing and Visualization.
 
+
+
 ## Screenshot
 
-![App Screenshot](https://github.com/togaplase/GExplor/ChatGPT Image May 3, 2025, 09_26_55 AM.png)
+![App Screenshot](https://raw.githubusercontent.com/togaplase/GExplor/main/ChatGPT_Image_May_3_2025_09_26_55_AM.png)
+
 
 ## Prerequisites
 
