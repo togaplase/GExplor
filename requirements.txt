@@ -2,7 +2,6 @@ streamlit
 pandas
 matplotlib
 numpy
-scikit-image
 scipy
 pyproj
 scikit-learn
