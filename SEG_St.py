@@ -148,8 +148,149 @@ def imshow_hs(  # noqa: PLR0912, PLR0913, PLR0915
     std_range=1,
     figsize=(8, 8),
     title=None,
-    **kwargs,
-)
+    **kwargs,):
+
+        if isinstance(source, interpies.Grid):
+        kwargs['extent'] = source.extent
+        data = source.data
+        if title is None:
+            if source.name != 'Unknown':
+                title = source.name
+    else:
+        data = source.copy()
+
+    ## Extract keywords - using pop() also removes the key from the dictionary
+    # keyword for the colorbar
+    cb_kwargs = dict(shrink=kwargs.pop('shrink', 0.6))
+
+    # keywords for the title
+    title_kwargs = dict(fontweight=kwargs.pop('fontweight', None), fontsize=kwargs.pop('fontsize', 'large'))
+
+    # keyword arguments that can be passed to ls.shade
+    shade_kwargs = dict(norm=kwargs.get('norm'), vmin=kwargs.get('vmin'), vmax=kwargs.get('vmax'))
+
+    # keywords for cmap normalisation
+    min_percent = kwargs.pop('min_percent', 2)
+    max_percent = kwargs.pop('max_percent', 98)
+
+    # keywords for contours
+    ct_colors = kwargs.pop('ct_colors', 'k')
+    ct_cmap = kwargs.pop('ct_cmap', None)
+
+    # modify colormap if required
+    if cmap_norm in ['equalize', 'equalise', 'equalization', 'equalisation']:
+        # equalisation
+        my_cmap = equalize_colormap(cmap, data)
+
+    elif cmap_norm in ['auto', 'autolevels']:
+        # clip colormap
+        my_cmap = modify_colormap(cmap, data, modif='autolevels', min_percent=min_percent, max_percent=max_percent)
+    else:
+        # colormap is loaded unchanged from the input name
+        my_cmap = load_cmap(cmap)  # raise error if name is not recognised
+
+    # apply brightness control
+    if cmap_brightness != 1.0:
+        my_cmap = modify_colormap(my_cmap, modif='brightness', brightness=cmap_brightness)
+
+    # create figure or retrieve the one already defined
+    if ax:
+        _ = ax.get_figure()
+    else:
+        _, ax = plt.subplots(figsize=figsize)
+
+    # convert input data to a masked array
+    data = np.ma.masked_array(data, np.isnan(data))
+
+    # add array to figure with hillshade or not
+    if hs:
+        # flip azimuth upside down if grid is also flipped
+        if 'origin' in kwargs:
+            if kwargs['origin'] == 'lower':
+                azdeg = 180 - azdeg
+
+        # create light source
+        ls = mcolors.LightSource(azdeg, altdeg)
+
+        # calculate hillshade and combine the colormapped data with the intensity
+        if alpha == 0:
+            # special case when only the shaded relief is needed without blending
+            rgb = ls.hillshade(data, vert_exag=zf, dx=dx, dy=dy, fraction=hs_contrast)
+            kwargs['cmap'] = 'gray'
+
+        elif blend_mode == 'alpha':
+            # transparency blending
+            rgb = ls.shade(
+                data,
+                cmap=my_cmap,
+                blend_mode=alpha_blend,
+                vert_exag=zf,
+                dx=dx,
+                dy=dy,
+                fraction=hs_contrast,
+                alpha=alpha,
+                **shade_kwargs,
+            )
+
+        else:
+            # other blending modes from matplotlib function
+            rgb = ls.shade(
+                data,
+                cmap=my_cmap,
+                blend_mode=blend_mode,
+                vert_exag=zf,
+                dx=dx,
+                dy=dy,
+                fraction=hs_contrast,
+                **shade_kwargs,
+            )
+
+        # finally plot the array
+        ax.imshow(rgb, **kwargs)
+
+    else:
+        # display data without hillshading
+        im = ax.imshow(data, cmap=my_cmap, **kwargs)
+
+    # add contours
+    levels = None
+    if isinstance(contours, bool):
+        if contours:
+            levels = 32
+    else:
+        levels = contours
+        contours = True
+    if levels is not None:
+        # remove cmap keyword that might have been added earlier
+        _ = kwargs.pop('cmap', None)
+        conts = plt.contour(data, levels, linewidths=0.5, colors=ct_colors, linestyles='solid', cmap=ct_cmap, **kwargs)
+
+    # add colorbar
+    if colorbar and alpha != 0:
+        if hs:
+            # Use a proxy artist for the colorbar
+            im = ax.imshow(data, cmap=my_cmap, **kwargs)
+            im.remove()
+        # draw colorbar
+        if cb_ticks == 'linear':  # normal equidistant ticks on a linear scale
+            cb1 = plt.colorbar(im, ax=ax, **cb_kwargs)
+        else:  # show ticks at min, max, mean and standard deviation interval
+            new_ticks = stats_boundaries(data, std_range, std_range)
+            cb1 = plt.colorbar(im, ax=ax, ticks=new_ticks, **cb_kwargs)
+
+        # add optional contour lines on colorbar
+        if contours and cb_contours:
+            cb1.add_lines(conts)
+
+        cb1.update_normal(im)
+
+    # add title
+    if title:
+        ax.set_title(title, **title_kwargs)
+
+    # return Axes instance for re-use
+    return ax
+
 # ===============================
 # Sidebar dan Menu Navigasi
 # ===============================
