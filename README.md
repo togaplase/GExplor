@@ -6,7 +6,7 @@
 
 ## 📸 Screenshot
 
-<img src="GExplor/GExplore.png" alt="Screenshot" width="800"/>
+<img src="GExplore.png" alt="Screenshot" width="800"/>
 
 
 
