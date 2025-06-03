@@ -46,62 +46,6 @@ from scipy.interpolate import griddata
 def interpolate_manual(method, grid_x, grid_y, points, values):
     return griddata(points, values, (grid_x, grid_y), method=method)
 
-def terrain_correction(dem_path, point_coord, radius_m=1000, rho=2300):
-    with rasterio.open(dem_path) as src:
-        data = src.read(1)
-        transform = src.transform
-        res = src.res[0]  # Resolusi pixel
-        crs = src.crs
-
-        row, col = src.index(*point_coord)
-        window_size = int(radius_m / res)  # Menyesuaikan radius dengan resolusi DEM
-
-        try:
-            window = data[row - window_size:row + window_size, col - window_size:col + window_size]
-        except:
-            return np.nan  # Jika titik terlalu dekat tepi DEM
-
-        y, x = np.mgrid[-window_size:window_size, -window_size:window_size]
-        r = np.sqrt((x * res)**2 + (y * res)**2)
-        r[r == 0] = np.nan  # Hindari pembagian oleh nol
-
-        h = window - data[row, col]  # Selisih ketinggian antara titik dan DEM sekitarnya
-        A = res * res  # Luas piksel
-        G = 6.674e-11  # Konstanta gravitasi (m^3 kg^-1 s^-2)
-
-        # Perhitungan terrain correction (mGal)
-        tc = G * rho * np.nansum(h * A / r) * 1e5
-        tc = tc / 100  # Sesuaikan skala
-        return np.clip(tc / 100, 0.1064, 0.8726)
-
-# Fungsi untuk menghitung matriks sensitivitas G
-def calculate_sensitivity_matrix(x_grid, y_grid, z_grid, x_obs, y_obs, z_obs):
-    """
-    Menghitung matriks sensitivitas G untuk semua titik observasi.
-    """
-    G = []
-    for i in range(len(x_obs)):
-        row = []
-        for j in range(len(x_grid)):
-            r = np.sqrt((x_grid[j] - x_obs[i])**2 + (y_grid[j] - y_obs[i])**2 + (z_grid[j] - z_obs[i])**2)
-            row.append(1 / r)
-        G.append(row)
-    return np.array(G)
-
-# Fungsi untuk menghitung fungsi kesalahan
-def misfit_function(m, G, d_obs, Wd):
-    """
-    Fungsi kesalahan untuk inversi gravitasi.
-    """
-    d_pred = G @ m  # Prediksi data
-    residuals = Wd @ (d_pred - d_obs)  # Residuals
-    return np.sum(residuals**2)
-
-
-import numpy as np
-import streamlit as st
-
-
 def save_gxf(grid_z, x_coords, y_coords, filename="output.gxf", no_data=-99999):
     dx = x_coords[1] - x_coords[0]
     dy = y_coords[1] - y_coords[0]
@@ -127,10 +71,15 @@ def save_gxf(grid_z, x_coords, y_coords, filename="output.gxf", no_data=-99999):
             f.write(" ".join([f"{val:.2f}" for val in row]) + "\n")
 
     return filename
-def imshow_hs(  # noqa: PLR0912, PLR0913, PLR0915
+import numpy as np
+import matplotlib.pyplot as plt
+from matplotlib import colors, cm, contour
+from matplotlib.colors import LightSource
+
+def imshow_hs(
     source,
     ax=None,
-    cmap='geosoft',
+    cmap='viridis',
     cmap_norm='equalize',
     hs=True,
     zf=10,
@@ -140,7 +89,7 @@ def imshow_hs(  # noqa: PLR0912, PLR0913, PLR0915
     dy=1,
     hs_contrast=1.5,
     cmap_brightness=1.0,
-    blend_mode: Literal['alpha', 'hsv', 'overlay', 'soft'] = 'alpha',
+    blend_mode='alpha',
     alpha=0.7,
     contours=False,
     colorbar=True,
@@ -149,147 +98,80 @@ def imshow_hs(  # noqa: PLR0912, PLR0913, PLR0915
     std_range=1,
     figsize=(8, 8),
     title=None,
-    **kwargs,):
-
-    if isinstance(source, interpies.Grid):
-        kwargs['extent'] = source.extent
-        data = source.data
-        if title is None:
-            if source.name != 'Unknown':
-                title = source.name
-    else:
+    extent=None,  # tambahkan parameter extent untuk plotting geospatial-like
+    **kwargs,
+):
+    """
+    Menampilkan citra 2D dengan hillshade (tanpa interpies).
+    """
+    if isinstance(source, np.ndarray):
         data = source.copy()
-
-    ## Extract keywords - using pop() also removes the key from the dictionary
-    # keyword for the colorbar
-    cb_kwargs = dict(shrink=kwargs.pop('shrink', 0.6))
-
-    # keywords for the title
-    title_kwargs = dict(fontweight=kwargs.pop('fontweight', None), fontsize=kwargs.pop('fontsize', 'large'))
-
-    # keyword arguments that can be passed to ls.shade
-    shade_kwargs = dict(norm=kwargs.get('norm'), vmin=kwargs.get('vmin'), vmax=kwargs.get('vmax'))
-
-    # keywords for cmap normalisation
-    min_percent = kwargs.pop('min_percent', 2)
-    max_percent = kwargs.pop('max_percent', 98)
-
-    # keywords for contours
-    ct_colors = kwargs.pop('ct_colors', 'k')
-    ct_cmap = kwargs.pop('ct_cmap', None)
-
-    # modify colormap if required
-    if cmap_norm in ['equalize', 'equalise', 'equalization', 'equalisation']:
-        # equalisation
-        my_cmap = equalize_colormap(cmap, data)
-
-    elif cmap_norm in ['auto', 'autolevels']:
-        # clip colormap
-        my_cmap = modify_colormap(cmap, data, modif='autolevels', min_percent=min_percent, max_percent=max_percent)
     else:
-        # colormap is loaded unchanged from the input name
-        my_cmap = load_cmap(cmap)  # raise error if name is not recognised
+        raise ValueError("Input source harus berupa numpy array.")
 
-    # apply brightness control
-    if cmap_brightness != 1.0:
-        my_cmap = modify_colormap(my_cmap, modif='brightness', brightness=cmap_brightness)
-
-    # create figure or retrieve the one already defined
-    if ax:
-        _ = ax.get_figure()
-    else:
-        _, ax = plt.subplots(figsize=figsize)
-
-    # convert input data to a masked array
     data = np.ma.masked_array(data, np.isnan(data))
 
-    # add array to figure with hillshade or not
+    # Buat figure atau gunakan axis yang sudah ada
+    if ax is None:
+        fig, ax = plt.subplots(figsize=figsize)
+    else:
+        fig = ax.get_figure()
+
+    # Pilih colormap
+    my_cmap = plt.colormaps() if cmap in plt.colormaps() else plt.get_cmap(cmap)
+
+    # Normalisasi colormap
+    if cmap_norm == 'equalize':
+        vmin, vmax = np.percentile(data.compressed(), [2, 98])
+        norm = colors.Normalize(vmin=vmin, vmax=vmax)
+    elif cmap_norm == 'auto':
+        vmin, vmax = np.nanmin(data), np.nanmax(data)
+        norm = colors.Normalize(vmin=vmin, vmax=vmax)
+    else:
+        norm = None
+
+    # Hillshade
     if hs:
-        # flip azimuth upside down if grid is also flipped
-        if 'origin' in kwargs:
-            if kwargs['origin'] == 'lower':
-                azdeg = 180 - azdeg
+        ls = LightSource(azdeg=azdeg, altdeg=altdeg)
+        shaded = ls.hillshade(data, vert_exag=zf, dx=dx, dy=dy, fraction=hs_contrast)
 
-        # create light source
-        ls = mcolors.LightSource(azdeg, altdeg)
-
-        # calculate hillshade and combine the colormapped data with the intensity
-        if alpha == 0:
-            # special case when only the shaded relief is needed without blending
-            rgb = ls.hillshade(data, vert_exag=zf, dx=dx, dy=dy, fraction=hs_contrast)
-            kwargs['cmap'] = 'gray'
-
-        elif blend_mode == 'alpha':
-            # transparency blending
-            rgb = ls.shade(
-                data,
-                cmap=my_cmap,
-                blend_mode=alpha_blend,
-                vert_exag=zf,
-                dx=dx,
-                dy=dy,
-                fraction=hs_contrast,
-                alpha=alpha,
-                **shade_kwargs,
-            )
-
-        else:
-            # other blending modes from matplotlib function
-            rgb = ls.shade(
-                data,
-                cmap=my_cmap,
-                blend_mode=blend_mode,
-                vert_exag=zf,
-                dx=dx,
-                dy=dy,
-                fraction=hs_contrast,
-                **shade_kwargs,
-            )
-
-        # finally plot the array
-        ax.imshow(rgb, **kwargs)
-
+        rgb = ls.shade(
+            data,
+            cmap=my_cmap,
+            blend_mode=blend_mode,
+            norm=norm,
+            vert_exag=zf,
+            dx=dx,
+            dy=dy,
+            fraction=hs_contrast,
+            alpha=alpha
+        )
+        ax.imshow(rgb, extent=extent, **kwargs)
     else:
-        # display data without hillshading
-        im = ax.imshow(data, cmap=my_cmap, **kwargs)
+        im = ax.imshow(data, cmap=my_cmap, norm=norm, extent=extent, **kwargs)
 
-    # add contours
-    levels = None
-    if isinstance(contours, bool):
-        if contours:
-            levels = 32
-    else:
-        levels = contours
-        contours = True
-    if levels is not None:
-        # remove cmap keyword that might have been added earlier
-        _ = kwargs.pop('cmap', None)
-        conts = plt.contour(data, levels, linewidths=0.5, colors=ct_colors, linestyles='solid', cmap=ct_cmap, **kwargs)
+    # Kontur
+    if contours:
+        levels = 32 if not isinstance(contours, (list, int)) else contours
+        ct_colors = kwargs.pop('ct_colors', 'k')
+        ct_cmap = kwargs.pop('ct_cmap', None)
+        conts = ax.contour(data, levels, linewidths=0.5, colors=ct_colors, cmap=ct_cmap)
 
-    # add colorbar
-    if colorbar and alpha != 0:
+    # Colorbar
+    if colorbar and not (hs and alpha == 0):
         if hs:
-            # Use a proxy artist for the colorbar
-            im = ax.imshow(data, cmap=my_cmap, **kwargs)
-            im.remove()
-        # draw colorbar
-        if cb_ticks == 'linear':  # normal equidistant ticks on a linear scale
-            cb1 = plt.colorbar(im, ax=ax, **cb_kwargs)
-        else:  # show ticks at min, max, mean and standard deviation interval
-            new_ticks = stats_boundaries(data, std_range, std_range)
-            cb1 = plt.colorbar(im, ax=ax, ticks=new_ticks, **cb_kwargs)
+            im_proxy = ax.imshow(data, cmap=my_cmap, norm=norm, visible=False)
+            cb = fig.colorbar(im_proxy, ax=ax, shrink=0.6)
+        else:
+            cb = fig.colorbar(im, ax=ax, shrink=0.6)
 
-        # add optional contour lines on colorbar
-        if contours and cb_contours:
-            cb1.add_lines(conts)
+        if cb_contours and contours:
+            cb.add_lines(conts)
 
-        cb1.update_normal(im)
-
-    # add title
+    # Judul
     if title:
-        ax.set_title(title, **title_kwargs)
+        ax.set_title(title)
 
-    # return Axes instance for re-use
     return ax
 
 # ===============================
