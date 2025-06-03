@@ -133,7 +133,7 @@ def save_gxf(grid_z, x_coords, y_coords, filename="output.gxf", no_data=-99999):
 
 
 with st.sidebar:
-    st.image("D:\PycharmProjects\pythonProject\SEG\ChatGPT Image May 3, 2025, 09_26_55 AM.png")
+    st.image("GExplore.png")
     # Garis pemisah (divider)
     st.markdown("""<hr style="border:1px solid #ccc">""", unsafe_allow_html=True)
     st.sidebar.title("About")
@@ -171,9 +171,9 @@ if selected2 == "Home":
     st.title("GExplor")
     st.markdown("### Comprehensive Gravity Exploration with Data Processing and Interactive Mapping")
     st.markdown("Before we start processing the Gravity data, we need to prepare our Excel data which consists of:")
-    st.image("D:\PycharmProjects\pythonProject\SEG\Screenshot 2025-05-03 094034.png")
+    st.image("Screenshot 2025-06-03 103715.png")
     st.markdown("Once that's done, we can start with the file upload as shown in the image below.")
-    st.image("D:\PycharmProjects\pythonProject\SEG/file_upload.png")
+    st.image("Screenshot 2025-06-03 103715.png")
 
     # Menampilkan logo email dan LinkedIn
     st.markdown("""
