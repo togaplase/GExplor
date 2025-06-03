@@ -16,7 +16,6 @@ import matplotlib.colors as mcolors
 import matplotlib.pyplot as plt
 import numpy as np
 from skimage import exposure
-
 # import local modules
 import interpies
 import interpies.colors as icolors
