@@ -501,7 +501,7 @@ elif selected2 == "Map":
     # ===============================
     # PEMETAAN BOUGUER
     # ===============================
-    import interpies
+    
     if st.sidebar.checkbox("Free Air Anomaly Map"):
         x_column, y_column, z_column = "Longitude", "Latitude", "G Obs"
 
