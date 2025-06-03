@@ -12,3 +12,4 @@ shapely
 folium
 streamlit-folium
 scikit-image==0.22.0
+interpies
