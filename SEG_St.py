@@ -74,47 +74,33 @@ def save_gxf(grid_z, x_coords, y_coords, filename="output.gxf", no_data=-99999):
             f.write(" ".join([f"{val:.2f}" for val in row]) + "\n")
 
     return filename
+
 def add_hillshade(data, ax, cmap='viridis', hs=True, azdeg=315, altdeg=45,
                   alpha=0.7, contours=24, show_contours=True):
-    """
-    Menambahkan hillshade dan kontur pada data grid.
-
-    Parameters:
-    - data: array 2D (grid_z)
-    - ax: matplotlib axis
-    - cmap: str, nama colormap
-    - hs: boolean, aktif/non-aktif hillshade
-    - azdeg: azimuth sudut cahaya
-    - altdeg: ketinggian cahaya
-    - alpha: transparansi warna
-    - contours: jumlah garis kontur
-    - show_contours: tampilkan kontur
-    """
-    # Hitung hillshade
     dy, dx = np.gradient(data)
     slope = np.arctan(np.sqrt(dx**2 + dy**2))
     aspect = np.arctan2(dy, dx)
 
-    # Sudut pencahayaan
     zenith_rad = np.radians(90 - altdeg)
     azimuth_rad = np.radians(360 - azdeg + 90)
-
     shaded = np.sin(zenith_rad) * np.sin(slope) + np.cos(zenith_rad) * np.cos(slope) * np.cos(azimuth_rad - aspect)
     shaded = (shaded - shaded.min()) / (shaded.max() - shaded.min())
 
-    # Tambahkan hillshade
+    # Set extent sesuai dengan data grid_x dan grid_y
+    extent = [
+        np.min(grid_x), np.max(grid_x),
+        np.min(grid_y), np.max(grid_y)
+    ]
+
     if hs:
-        ax.imshow(shaded, cmap='gray', alpha=0.5, origin='lower', extent=ax.get_xlim() + ax.get_ylim()[::-1])
-
-    # Plot data utama
-    im = ax.imshow(data, cmap=cmap, alpha=alpha, origin='lower', interpolation='bilinear',
-                   extent=ax.get_xlim() + ax.get_ylim()[::-1])
-
-    # Kontur
+        ax.imshow(shaded, cmap='gray', alpha=0.5, origin='lower', extent=extent)
+    
+    im = ax.imshow(data, cmap=cmap, alpha=alpha, origin='lower', interpolation='bilinear', extent=extent)
+    
     if show_contours and contours:
-        cs = ax.contour(data, levels=contours, colors='black', linewidths=0.5, alpha=0.8)
+        cs = ax.contour(data, levels=contours, colors='black', linewidths=0.5, alpha=0.8, extent=extent)
         ax.clabel(cs, inline=True, fontsize=8, fmt="%.1f")
-
+    
     return im
                       
 # ===============================
@@ -353,9 +339,6 @@ elif selected2 == "Map":
             # Interpolasi manual menggunakan griddata
             grid_z = interpolate_manual(interp_method, grid_x, grid_y, points, values)
 
-            # Pilihan colormap
-            colormap = st.sidebar.selectbox("Select Colormap", options=["RdBu_r", "rainbow", "bwr", "jet", "hsv"],
-                                            index=0)
 
             # Tabs untuk memisahkan visualisasi
             tab1, tab2 = st.tabs(["Standard Visualization", "UNDER-CONSTRUCTION"])
@@ -373,13 +356,6 @@ elif selected2 == "Map":
                 alpha_value = st.sidebar.slider("Transparansi Warna", 0.0, 1.0, 0.7, step=0.05)
                 show_points = st.sidebar.checkbox("Tampilkan Titik Pengukuran", value=True)
             
-                fig, ax = plt.subplots(figsize=(12, 8))
-            
-                # Dummy imshow untuk mendapatkan extent
-                im = ax.imshow(grid_z, cmap='viridis', alpha=0)
-                plt.close(fig)  # Tutup agar tidak double plot
-            
-                # Tambahkan peta dengan hillshade dan kontur
                 fig, ax = plt.subplots(figsize=(12, 8))
                 im = add_hillshade(grid_z, ax=ax, cmap=selected_cmap, hs=enable_hillshade,
                                    alpha=alpha_value, contours=contour_levels, show_contours=show_contours)
