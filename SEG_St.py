@@ -391,81 +391,81 @@ elif selected2 == "Map":
     if st.sidebar.checkbox("Simple Bouguer Anomaly Map"):
     x_column, y_column, z_column = "Longitude", "Latitude", "G Obs"
 
-    if all(col in df.columns for col in [x_column, y_column, 'GReduksi Gravitasi', 'G FA', 'BS']):
-        # Hitung Simple Bouguer Anomaly
-        df['Bouguer Anomaly'] = (df[z_column] - df['GReduksi Gravitasi'] + df['G FA'] - df['BS']).round(3)
-
-        df_filtered = df.copy()
-
-        # Pilihan metode interpolasi
-        interp_method = st.sidebar.selectbox("Interpolation Method (Bouguer)", ["cubic", "linear", "nearest"], index=0)
-        grid_resolution = st.sidebar.slider("Grid Resolution (Bouguer)", 100, 1500, 500, step=100)
-
-        # Buat grid interpolasi
-        grid_x, grid_y = np.meshgrid(
-            np.linspace(df_filtered['Longitude'].min(), df_filtered['Longitude'].max(), grid_resolution),
-            np.linspace(df_filtered['Latitude'].min(), df_filtered['Latitude'].max(), grid_resolution)
-        )
-
-        # Ambil titik dan nilai
-        points = df_filtered[["Longitude", "Latitude"]].values
-        values = df_filtered["Bouguer Anomaly"].values
-
-        # Interpolasi manual menggunakan griddata
-        grid_z = interpolate_manual(interp_method, grid_x, grid_y, points, values)
-
-        # Tabs untuk memisahkan visualisasi
-        tab1, tab2 = st.tabs(["Standard Visualization", "UNDER-CONSTRUCTION"])
-
-        with tab1:
-            st.subheader("Simple Bouguer Anomaly Map (Oasis Montaj Style)")
-
-            # Sidebar Controls
-            st.sidebar.header("Visual Options (Bouguer)")
-            cmap_options = ['RdBu_r', 'viridis', 'plasma', 'jet', 'coolwarm']
-            selected_cmap = st.sidebar.selectbox("Pilih Colormap (Bouguer)", options=cmap_options, index=0)
-            enable_hillshade = st.sidebar.checkbox("Gunakan Hillshade (Bouguer)", value=True)
-            contour_levels = st.sidebar.slider("Jumlah Garis Kontur (Bouguer)", 5, 50, 20, step=1)
-            show_contours = st.sidebar.checkbox("Tampilkan Garis Kontur (Bouguer)", value=True)
-            alpha_value = st.sidebar.slider("Transparansi Warna (Bouguer)", 0.0, 1.0, 0.7, step=0.05)
-            show_points = st.sidebar.checkbox("Tampilkan Titik Pengukuran (Bouguer)", value=True)
-
-            fig, ax = plt.subplots(figsize=(12, 8))
-
-            # Dummy imshow untuk mendapatkan extent
-            im = ax.imshow(grid_z, cmap='viridis', alpha=0)
-            plt.close(fig)  # Tutup agar tidak double plot
-
-            # Tambahkan peta dengan hillshade dan kontur
-            fig, ax = plt.subplots(figsize=(12, 8))
-            im = add_hillshade(grid_z, ax=ax, cmap=selected_cmap, hs=enable_hillshade,
-                               alpha=alpha_value, contours=contour_levels, show_contours=show_contours)
-
-            # Colorbar
-            cbar = fig.colorbar(im, ax=ax, label="Bouguer Anomaly (mGal)")
-
-            # Titik pengukuran
-            if show_points:
-                ax.scatter(df_filtered['Longitude'], df_filtered['Latitude'], color='white', edgecolor='black',
-                           s=10, label="Measurement Points")
-                ax.legend()
-
-            ax.set_title("Simple Bouguer Anomaly Map (Style Oasis Montaj)")
-            ax.set_xlabel("Longitude")
-            ax.set_ylabel("Latitude")
-            ax.axis('image')  # Agar aspek rasio sesuai
-            plt.tight_layout()
-            st.pyplot(fig)
-
-            # Tombol Download Gambar
-            buf = io.BytesIO()
-            fig.savefig(buf, format="png", dpi=300, bbox_inches='tight')
-            st.download_button(
-                label="🖼️ Download Peta sebagai PNG",
-                data=buf.getvalue(),
-                file_name="bouguer_oasis_style_map.png",
-                mime="image/png"
+        if all(col in df.columns for col in [x_column, y_column, 'GReduksi Gravitasi', 'G FA', 'BS']):
+            # Hitung Simple Bouguer Anomaly
+            df['Bouguer Anomaly'] = (df[z_column] - df['GReduksi Gravitasi'] + df['G FA'] - df['BS']).round(3)
+    
+            df_filtered = df.copy()
+    
+            # Pilihan metode interpolasi
+            interp_method = st.sidebar.selectbox("Interpolation Method (Bouguer)", ["cubic", "linear", "nearest"], index=0)
+            grid_resolution = st.sidebar.slider("Grid Resolution (Bouguer)", 100, 1500, 500, step=100)
+    
+            # Buat grid interpolasi
+            grid_x, grid_y = np.meshgrid(
+                np.linspace(df_filtered['Longitude'].min(), df_filtered['Longitude'].max(), grid_resolution),
+                np.linspace(df_filtered['Latitude'].min(), df_filtered['Latitude'].max(), grid_resolution)
             )
+    
+            # Ambil titik dan nilai
+            points = df_filtered[["Longitude", "Latitude"]].values
+            values = df_filtered["Bouguer Anomaly"].values
+    
+            # Interpolasi manual menggunakan griddata
+            grid_z = interpolate_manual(interp_method, grid_x, grid_y, points, values)
+    
+            # Tabs untuk memisahkan visualisasi
+            tab1, tab2 = st.tabs(["Standard Visualization", "UNDER-CONSTRUCTION"])
+    
+            with tab1:
+                st.subheader("Simple Bouguer Anomaly Map (Oasis Montaj Style)")
+    
+                # Sidebar Controls
+                st.sidebar.header("Visual Options (Bouguer)")
+                cmap_options = ['RdBu_r', 'viridis', 'plasma', 'jet', 'coolwarm']
+                selected_cmap = st.sidebar.selectbox("Pilih Colormap (Bouguer)", options=cmap_options, index=0)
+                enable_hillshade = st.sidebar.checkbox("Gunakan Hillshade (Bouguer)", value=True)
+                contour_levels = st.sidebar.slider("Jumlah Garis Kontur (Bouguer)", 5, 50, 20, step=1)
+                show_contours = st.sidebar.checkbox("Tampilkan Garis Kontur (Bouguer)", value=True)
+                alpha_value = st.sidebar.slider("Transparansi Warna (Bouguer)", 0.0, 1.0, 0.7, step=0.05)
+                show_points = st.sidebar.checkbox("Tampilkan Titik Pengukuran (Bouguer)", value=True)
+    
+                fig, ax = plt.subplots(figsize=(12, 8))
+    
+                # Dummy imshow untuk mendapatkan extent
+                im = ax.imshow(grid_z, cmap='viridis', alpha=0)
+                plt.close(fig)  # Tutup agar tidak double plot
+    
+                # Tambahkan peta dengan hillshade dan kontur
+                fig, ax = plt.subplots(figsize=(12, 8))
+                im = add_hillshade(grid_z, ax=ax, cmap=selected_cmap, hs=enable_hillshade,
+                                   alpha=alpha_value, contours=contour_levels, show_contours=show_contours)
+    
+                # Colorbar
+                cbar = fig.colorbar(im, ax=ax, label="Bouguer Anomaly (mGal)")
+    
+                # Titik pengukuran
+                if show_points:
+                    ax.scatter(df_filtered['Longitude'], df_filtered['Latitude'], color='white', edgecolor='black',
+                               s=10, label="Measurement Points")
+                    ax.legend()
+    
+                ax.set_title("Simple Bouguer Anomaly Map (Style Oasis Montaj)")
+                ax.set_xlabel("Longitude")
+                ax.set_ylabel("Latitude")
+                ax.axis('image')  # Agar aspek rasio sesuai
+                plt.tight_layout()
+                st.pyplot(fig)
+    
+                # Tombol Download Gambar
+                buf = io.BytesIO()
+                fig.savefig(buf, format="png", dpi=300, bbox_inches='tight')
+                st.download_button(
+                    label="🖼️ Download Peta sebagai PNG",
+                    data=buf.getvalue(),
+                    file_name="bouguer_oasis_style_map.png",
+                    mime="image/png"
+                )
     
         else:
             st.error("Required columns for Bouguer Anomaly calculation not found in your data.")
