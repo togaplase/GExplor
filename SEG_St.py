@@ -478,15 +478,6 @@ elif selected2 == "Map":
                     st.pyplot(fig_hist)
 
 
-                # Histogram tetap bisa ditampilkan
-                if st.checkbox("Show Histogram", value=True, key="hist_om"):
-                    st.subheader("Distribution of Free Air Anomaly Values")
-                    fig_hist, ax_hist = plt.subplots()
-                    ax_hist.hist(values, bins=20, color='skyblue', edgecolor='black')
-                    ax_hist.set_xlabel("Free Air Anomaly (mGal)")
-                    ax_hist.set_ylabel("Frequency")
-                    ax_hist.set_title("Histogram of Anomaly Values")
-                    st.pyplot(fig_hist)
 
         else:
             st.warning("Kolom yang dibutuhkan untuk perhitungan FAA tidak tersedia.")
