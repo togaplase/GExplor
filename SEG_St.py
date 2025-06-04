@@ -394,52 +394,58 @@ elif selected2 == "Map":
         x_column = "Longitude"
         y_column = "Latitude"
         z_column = "G Obs"
-
+    
         if all(col in df.columns for col in ['Longitude', 'Latitude', 'GReduksi Gravitasi', 'G FA', 'BS']):
             df['Bouguer Anomaly'] = (df[z_column] - df['GReduksi Gravitasi'] + df['G FA'] - df['BS']).round(3)
-
+    
             anomaly_min = st.sidebar.slider("Min Anomaly Value", float(df['Bouguer Anomaly'].min()),
                                             float(df['Bouguer Anomaly'].max()), float(df['Bouguer Anomaly'].quantile(0.05)))
             anomaly_max = st.sidebar.slider("Max Anomaly Value", float(df['Bouguer Anomaly'].min()),
                                             float(df['Bouguer Anomaly'].max()), float(df['Bouguer Anomaly'].quantile(0.95)))
-
+    
             df_filtered = df[(df['Bouguer Anomaly'] >= anomaly_min) & (df['Bouguer Anomaly'] <= anomaly_max)]
-
+    
             interp_method = st.sidebar.selectbox("Select Interpolation Method", ["cubic", "linear", "nearest"])
             grid_resolution = st.sidebar.slider("Grid Resolution", 100, 1500, 500, 100)
-
+    
             grid_x, grid_y = np.meshgrid(
                 np.linspace(df_filtered[x_column].min(), df_filtered[x_column].max(), grid_resolution),
                 np.linspace(df_filtered[y_column].min(), df_filtered[y_column].max(), grid_resolution)
             )
-
+    
             points = df_filtered[[x_column, y_column]].values
             values = df_filtered['Bouguer Anomaly'].values
             grid_z = griddata(points, values, (grid_x, grid_y), method=interp_method)
-
-
+    
+            # Tambahkan pemilihan colormap
+            cmap_options = ['RdBu_r', 'viridis', 'plasma', 'jet', 'coolwarm']
+            selected_cmap = st.sidebar.selectbox("Pilih Colormap untuk Bouguer", options=cmap_options, index=0)
+    
             fig, ax = plt.subplots(figsize=(10, 6))
-            cs = ax.contourf(grid_x, grid_y, grid_z, cmap=colormap, levels=20)
-
+            cs = ax.contourf(grid_x, grid_y, grid_z, cmap=selected_cmap, levels=20)
             cbar = fig.colorbar(cs, ax=ax, label="Bouguer Anomaly (mGal)")
-
+    
             show_points = st.sidebar.checkbox("Show Measurement Points", value=True)
             if show_points:
                 ax.scatter(df_filtered[x_column], df_filtered[y_column], color='black', s=10, label="Measurement Points")
                 ax.legend(loc='upper right')
-
+    
+            ax.set_title("Simple Bouguer Anomaly Map")
+            ax.set_xlabel("Longitude")
+            ax.set_ylabel("Latitude")
+            ax.axis('image')
+            plt.tight_layout()
             st.pyplot(fig)
-
-
+    
+            # Tombol download
+            buf = io.BytesIO()
+            fig.savefig(buf, format="png", dpi=300, bbox_inches='tight')
+            st.download_button(
+                label="🖼️ Download Peta sebagai PNG",
+                data=buf.getvalue(),
+                file_name="bouguer_anomaly_map.png",
+                mime="image/png"
+            )
+    
         else:
             st.error("Required columns for Bouguer Anomaly calculation not found in your data.")
-
-        # Misal fig adalah hasil plot kamu
-        buf = io.BytesIO()
-        fig.savefig(buf, format="png")
-        st.download_button(
-            label="🖼️ Download Peta sebagai PNG",
-            data=buf.getvalue(),
-            file_name="peta_anomali.png",
-            mime="image/png"
-        )
