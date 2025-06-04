@@ -76,114 +76,6 @@ def save_gxf(grid_z, x_coords, y_coords, filename="output.gxf", no_data=-99999):
     return filename
 
 # ===============================
-# Undermaintenance
-# ===============================
-# def imshow_hs(
-#     source,
-#     ax=None,
-#     cmap='viridis',
-#     cmap_norm='equalize',
-#     hs=True,
-#     zf=10,
-#     azdeg=45,
-#     altdeg=45,
-#     dx=1,
-#     dy=1,
-#     hs_contrast=1.5,
-#     cmap_brightness=1.0,
-#     blend_mode='hsv',  # Sudah diganti ke mode yang valid
-#     alpha=0.7,
-#     contours=False,
-#     colorbar=True,
-#     cb_contours=False,
-#     cb_ticks='linear',
-#     std_range=1,
-#     figsize=(8, 8),
-#     title=None,
-#     extent=None,
-#     **kwargs,
-# ):
-#     """
-#     Menampilkan citra 2D dengan hillshade.
-#     """
-#     if not isinstance(source, (np.ndarray, np.ma.MaskedArray)):
-#         raise ValueError("Input source harus berupa numpy array atau masked array.")
-
-#     data = np.ma.masked_array(source, np.isnan(source))
-
-#     # Buat figure atau gunakan axis yang sudah ada
-#     if ax is None:
-#         fig, ax = plt.subplots(figsize=figsize)
-#     else:
-#         fig = ax.get_figure()
-
-#     # Validasi colormap
-#     valid_cmaps = plt.colormaps()
-#     if cmap not in valid_cmaps:
-#         print(f"Colormap '{cmap}' tidak dikenali. Menggunakan 'viridis' sebagai ganti.")
-#         cmap = 'viridis'
-#     my_cmap = plt.get_cmap(cmap)
-
-#     # Normalisasi colormap
-#     if cmap_norm == 'equalize':
-#         vmin, vmax = np.percentile(data.compressed(), [2, 98])
-#         norm = plt.Normalize(vmin=vmin, vmax=vmax)
-#     elif cmap_norm == 'auto':
-#         vmin, vmax = np.nanmin(data), np.nanmax(data)
-#         norm = plt.Normalize(vmin=vmin, vmax=vmax)
-#     else:
-#         norm = None
-
-#     # Hillshade
-#     if hs:
-#         # Gunakan mode blending yang valid
-#         valid_blend_modes = ['hsv', 'overlay', 'soft', 'multiply']
-#         if blend_mode not in valid_blend_modes:
-#             blend_mode = 'hsv'
-
-#         # Inisialisasi LightSource
-#         ls = LightSource(azdeg=azdeg, altdeg=altdeg)
-
-#         # Gambar hillshade
-#         rgb = ls.shade(
-#             data,
-#             cmap=my_cmap,
-#             blend_mode=blend_mode,
-#             norm=norm,
-#             vert_exag=zf,
-#             dx=dx,
-#             dy=dy,
-#             fraction=hs_contrast,
-#             alpha=alpha
-#         )
-#         ax.imshow(rgb, extent=extent, **kwargs)
-#     else:
-#         im = ax.imshow(data, cmap=my_cmap, norm=norm, extent=extent, **kwargs)
-
-#     # Kontur
-#     if contours:
-#         levels = 32 if not isinstance(contours, (list, int)) else contours
-#         ct_colors = kwargs.pop('ct_colors', 'k')
-#         ct_cmap = kwargs.pop('ct_cmap', None)
-#         conts = ax.contour(data, levels, linewidths=0.5, colors=ct_colors, cmap=ct_cmap)
-
-#     # Colorbar
-#     if colorbar and not (hs and alpha == 0):
-#         if hs:
-#             im_proxy = ax.imshow(data, cmap=my_cmap, norm=norm, visible=False)
-#             cb = fig.colorbar(im_proxy, ax=ax, shrink=0.6)
-#         else:
-#             cb = fig.colorbar(im, ax=ax, shrink=0.6)
-
-#         if cb_contours and contours:
-#             cb.add_lines(conts)
-
-#     # Judul
-#     if title:
-#         ax.set_title(title)
-
-#     return ax
-# ===============================
 # Sidebar dan Menu Navigasi
 # ===============================
 
@@ -522,14 +414,6 @@ elif selected2 == "Map":
             values = df_filtered['Bouguer Anomaly'].values
             grid_z = griddata(points, values, (grid_x, grid_y), method=interp_method)
 
-            #
-            colormap = st.sidebar.selectbox("Select Colormap", ["RdBu_r", "viridis", "magma", "bwr", "jet", "hsv"], index=0)
-            # Optional Gaussian Smoothing
-            # apply_smoothing = st.sidebar.checkbox("Apply Gaussian Smoothing", value=False)
-            # if apply_smoothing:
-            #     from scipy.ndimage import gaussian_filter
-            #     sigma = st.sidebar.slider("Smoothing Level (Sigma)", 0.5, 5.0, 1.0)
-            #     grid_z = gaussian_filter(grid_z, sigma=sigma)
 
             fig, ax = plt.subplots(figsize=(10, 6))
             cs = ax.contourf(grid_x, grid_y, grid_z, cmap=colormap, levels=20)
