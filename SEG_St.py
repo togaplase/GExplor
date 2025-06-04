@@ -424,13 +424,11 @@ elif selected2 == "Map":
                                             index=0)
 
             # Tabs untuk memisahkan visualisasi
-            tab1, tab2 = st.tabs(["Standard Visualization", "Oasis Montaj Style"])
+            tab1, tab2 = st.tabs(["Standard Visualization", "UNDER-CONSTRUCTION"])
 
             with tab1:
                 st.subheader("Free Air Anomaly Map (Standard)")
 
-                show_contour_lines = st.checkbox("Show Contour Lines", value=True, key="contour_std")
-                show_points = st.checkbox("Show Measurement Points", value=True, key="points_std")
 
                 # Hitung gradien untuk hillshade
                 gy, gx = np.gradient(grid_z)
@@ -457,7 +455,10 @@ elif selected2 == "Map":
                     ax.scatter(df_filtered['Longitude'], df_filtered['Latitude'], color='black', s=10,
                                label="Measurement Points")
                     ax.legend()
-
+                    
+                show_contour_lines = st.checkbox("Show Contour Lines", value=True, key="contour_std")
+                show_points = st.checkbox("Show Measurement Points", value=True, key="points_std")
+                
                 ax.set_xlabel("Longitude")
                 ax.set_ylabel("Latitude")
                 ax.set_title("Free Air Anomaly Map with Hillshade")
@@ -474,62 +475,6 @@ elif selected2 == "Map":
                     ax_hist.set_title("Histogram of Anomaly Values")
                     st.pyplot(fig_hist)
 
-            with tab2:
-                st.subheader("Free Air Anomaly Map (Oasis Montaj Style)")
-
-                # Sidebar controls
-                st.sidebar.header("Oasis Montaj Style Options")
-                st.title("UNDERMAINTENANCE")
-
-                # cmap_options = ['geosoft', 'jet', 'viridis', 'plasma', 'inferno', 'RdBu_r', 'bwr']
-                # selected_cmap = st.sidebar.selectbox("Pilih Colormap", options=cmap_options, index=0)
-
-                # enable_hillshade = st.sidebar.checkbox("Gunakan Hillshade", value=True)
-
-                # hillshade_contrast = st.sidebar.slider("Kontras Hillshade", min_value=0.1, max_value=2.0, value=1.2,
-                #                                        step=0.1)
-
-                # blend_mode = st.sidebar.selectbox("Blend Mode", options=['alpha', 'hsv', 'overlay', 'soft'], index=0)
-
-                # alpha_value = st.sidebar.slider("Transparansi Warna (Alpha)", min_value=0.0, max_value=1.0, value=0.7,
-                #                                 step=0.05)
-
-                # contour_levels = st.sidebar.slider("Jumlah Kontur", min_value=5, max_value=50, value=24, step=1)
-
-                # show_cb_contours = st.sidebar.checkbox("Tampilkan Kontur di Colorbar", value=False)
-
-                # # Plot dengan imshow_hs
-                # fig_om, ax_om = plt.subplots(figsize=(12, 8))
-
-                # imshow_hs(
-                #     grid_z,
-                #     ax=ax_om,
-                #     cmap=selected_cmap,
-                #     cmap_norm='equalize',
-                #     hs=enable_hillshade,
-                #     zf=5,
-                #     azdeg=315,
-                #     altdeg=45,
-                #     dx=1, dy=1,
-                #     hs_contrast=hillshade_contrast,
-                #     cmap_brightness=1.0,
-                #     blend_mode=blend_mode,
-                #     alpha=alpha_value,
-                #     contours=contour_levels,
-                #     colorbar=True,
-                #     cb_contours=show_cb_contours,
-                #     title="Free Air Anomaly Map",
-                #     origin='lower',
-                # )
-
-                # # Titik pengukuran
-                # if st.sidebar.checkbox("Show Measurement Points", value=True, key="points_om"):
-                #     ax_om.scatter(df_filtered['Longitude'], df_filtered['Latitude'], color='white', s=10,
-                #                   label="Measurement Points", edgecolors='black')
-                #     ax_om.legend()
-
-                # plt.tight_layout()
-                # st.pyplot(fig_om)
 
                 # Histogram tetap bisa ditampilkan
                 if st.checkbox("Show Histogram", value=True, key="hist_om"):
