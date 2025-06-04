@@ -11,3 +11,4 @@ typing
 openpyxl
 Geopandas
 folium
+streamlit_folium
