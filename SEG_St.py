@@ -389,7 +389,7 @@ elif selected2 == "Map":
 
 
     if st.sidebar.checkbox("Simple Bouguer Anomaly Map"):
-    x_column, y_column, z_column = "Longitude", "Latitude", "G Obs"
+        x_column, y_column, z_column = "Longitude", "Latitude", "G Obs"
 
         if all(col in df.columns for col in [x_column, y_column, 'GReduksi Gravitasi', 'G FA', 'BS']):
             # Hitung Simple Bouguer Anomaly
