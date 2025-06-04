@@ -12,3 +12,4 @@ openpyxl
 Geopandas
 folium
 streamlit_folium
+rasterio
