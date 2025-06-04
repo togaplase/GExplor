@@ -445,6 +445,11 @@ elif selected2 == "Map":
                 cs = ax.contourf(grid_x, grid_y, grid_z, cmap=colormap, levels=20, alpha=0.8)
                 cbar = fig.colorbar(cs, ax=ax, label="Free Air Anomaly (mGal)")
 
+
+                    
+                show_contour_lines = st.checkbox("Show Contour Lines", value=True, key="contour_std")
+                show_points = st.checkbox("Show Measurement Points", value=True, key="points_std")
+
                 # Plot kontur garis
                 if show_contour_lines:
                     cs_lines = ax.contour(grid_x, grid_y, grid_z, colors='black', linewidths=0.5, levels=10)
@@ -455,9 +460,6 @@ elif selected2 == "Map":
                     ax.scatter(df_filtered['Longitude'], df_filtered['Latitude'], color='black', s=10,
                                label="Measurement Points")
                     ax.legend()
-                    
-                show_contour_lines = st.checkbox("Show Contour Lines", value=True, key="contour_std")
-                show_points = st.checkbox("Show Measurement Points", value=True, key="points_std")
                 
                 ax.set_xlabel("Longitude")
                 ax.set_ylabel("Latitude")
