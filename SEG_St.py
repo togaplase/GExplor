@@ -229,7 +229,7 @@ if selected2 == "Home":
     st.markdown("Before we start processing the Gravity data, we need to prepare our Excel data which consists of:")
     st.image("Screenshot 2025-06-03 103715.png")
     st.markdown("Once that's done, we can start with the file upload as shown in the image below.")
-    # st.image("file_upload.png")
+    st.image("file_upload.png")
 
     # Menampilkan logo email dan LinkedIn
     st.markdown("""
