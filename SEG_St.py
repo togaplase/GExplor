@@ -75,112 +75,114 @@ def save_gxf(grid_z, x_coords, y_coords, filename="output.gxf", no_data=-99999):
 
     return filename
 
+# ===============================
+# Undermaintenance
+# ===============================
+# def imshow_hs(
+#     source,
+#     ax=None,
+#     cmap='viridis',
+#     cmap_norm='equalize',
+#     hs=True,
+#     zf=10,
+#     azdeg=45,
+#     altdeg=45,
+#     dx=1,
+#     dy=1,
+#     hs_contrast=1.5,
+#     cmap_brightness=1.0,
+#     blend_mode='hsv',  # Sudah diganti ke mode yang valid
+#     alpha=0.7,
+#     contours=False,
+#     colorbar=True,
+#     cb_contours=False,
+#     cb_ticks='linear',
+#     std_range=1,
+#     figsize=(8, 8),
+#     title=None,
+#     extent=None,
+#     **kwargs,
+# ):
+#     """
+#     Menampilkan citra 2D dengan hillshade.
+#     """
+#     if not isinstance(source, (np.ndarray, np.ma.MaskedArray)):
+#         raise ValueError("Input source harus berupa numpy array atau masked array.")
 
-def imshow_hs(
-    source,
-    ax=None,
-    cmap='viridis',
-    cmap_norm='equalize',
-    hs=True,
-    zf=10,
-    azdeg=45,
-    altdeg=45,
-    dx=1,
-    dy=1,
-    hs_contrast=1.5,
-    cmap_brightness=1.0,
-    blend_mode='hsv',  # Sudah diganti ke mode yang valid
-    alpha=0.7,
-    contours=False,
-    colorbar=True,
-    cb_contours=False,
-    cb_ticks='linear',
-    std_range=1,
-    figsize=(8, 8),
-    title=None,
-    extent=None,
-    **kwargs,
-):
-    """
-    Menampilkan citra 2D dengan hillshade.
-    """
-    if not isinstance(source, (np.ndarray, np.ma.MaskedArray)):
-        raise ValueError("Input source harus berupa numpy array atau masked array.")
+#     data = np.ma.masked_array(source, np.isnan(source))
 
-    data = np.ma.masked_array(source, np.isnan(source))
+#     # Buat figure atau gunakan axis yang sudah ada
+#     if ax is None:
+#         fig, ax = plt.subplots(figsize=figsize)
+#     else:
+#         fig = ax.get_figure()
 
-    # Buat figure atau gunakan axis yang sudah ada
-    if ax is None:
-        fig, ax = plt.subplots(figsize=figsize)
-    else:
-        fig = ax.get_figure()
+#     # Validasi colormap
+#     valid_cmaps = plt.colormaps()
+#     if cmap not in valid_cmaps:
+#         print(f"Colormap '{cmap}' tidak dikenali. Menggunakan 'viridis' sebagai ganti.")
+#         cmap = 'viridis'
+#     my_cmap = plt.get_cmap(cmap)
 
-    # Validasi colormap
-    valid_cmaps = plt.colormaps()
-    if cmap not in valid_cmaps:
-        print(f"Colormap '{cmap}' tidak dikenali. Menggunakan 'viridis' sebagai ganti.")
-        cmap = 'viridis'
-    my_cmap = plt.get_cmap(cmap)
+#     # Normalisasi colormap
+#     if cmap_norm == 'equalize':
+#         vmin, vmax = np.percentile(data.compressed(), [2, 98])
+#         norm = plt.Normalize(vmin=vmin, vmax=vmax)
+#     elif cmap_norm == 'auto':
+#         vmin, vmax = np.nanmin(data), np.nanmax(data)
+#         norm = plt.Normalize(vmin=vmin, vmax=vmax)
+#     else:
+#         norm = None
 
-    # Normalisasi colormap
-    if cmap_norm == 'equalize':
-        vmin, vmax = np.percentile(data.compressed(), [2, 98])
-        norm = plt.Normalize(vmin=vmin, vmax=vmax)
-    elif cmap_norm == 'auto':
-        vmin, vmax = np.nanmin(data), np.nanmax(data)
-        norm = plt.Normalize(vmin=vmin, vmax=vmax)
-    else:
-        norm = None
+#     # Hillshade
+#     if hs:
+#         # Gunakan mode blending yang valid
+#         valid_blend_modes = ['hsv', 'overlay', 'soft', 'multiply']
+#         if blend_mode not in valid_blend_modes:
+#             blend_mode = 'hsv'
 
-    # Hillshade
-    if hs:
-        # Gunakan mode blending yang valid
-        valid_blend_modes = ['hsv', 'overlay', 'soft', 'multiply']
-        if blend_mode not in valid_blend_modes:
-            blend_mode = 'hsv'
+#         # Inisialisasi LightSource
+#         ls = LightSource(azdeg=azdeg, altdeg=altdeg)
 
-        # Inisialisasi LightSource
-        ls = LightSource(azdeg=azdeg, altdeg=altdeg)
+#         # Gambar hillshade
+#         rgb = ls.shade(
+#             data,
+#             cmap=my_cmap,
+#             blend_mode=blend_mode,
+#             norm=norm,
+#             vert_exag=zf,
+#             dx=dx,
+#             dy=dy,
+#             fraction=hs_contrast,
+#             alpha=alpha
+#         )
+#         ax.imshow(rgb, extent=extent, **kwargs)
+#     else:
+#         im = ax.imshow(data, cmap=my_cmap, norm=norm, extent=extent, **kwargs)
 
-        # Gambar hillshade
-        rgb = ls.shade(
-            data,
-            cmap=my_cmap,
-            blend_mode=blend_mode,
-            norm=norm,
-            vert_exag=zf,
-            dx=dx,
-            dy=dy,
-            fraction=hs_contrast,
-            alpha=alpha
-        )
-        ax.imshow(rgb, extent=extent, **kwargs)
-    else:
-        im = ax.imshow(data, cmap=my_cmap, norm=norm, extent=extent, **kwargs)
+#     # Kontur
+#     if contours:
+#         levels = 32 if not isinstance(contours, (list, int)) else contours
+#         ct_colors = kwargs.pop('ct_colors', 'k')
+#         ct_cmap = kwargs.pop('ct_cmap', None)
+#         conts = ax.contour(data, levels, linewidths=0.5, colors=ct_colors, cmap=ct_cmap)
 
-    # Kontur
-    if contours:
-        levels = 32 if not isinstance(contours, (list, int)) else contours
-        ct_colors = kwargs.pop('ct_colors', 'k')
-        ct_cmap = kwargs.pop('ct_cmap', None)
-        conts = ax.contour(data, levels, linewidths=0.5, colors=ct_colors, cmap=ct_cmap)
+#     # Colorbar
+#     if colorbar and not (hs and alpha == 0):
+#         if hs:
+#             im_proxy = ax.imshow(data, cmap=my_cmap, norm=norm, visible=False)
+#             cb = fig.colorbar(im_proxy, ax=ax, shrink=0.6)
+#         else:
+#             cb = fig.colorbar(im, ax=ax, shrink=0.6)
 
-    # Colorbar
-    if colorbar and not (hs and alpha == 0):
-        if hs:
-            im_proxy = ax.imshow(data, cmap=my_cmap, norm=norm, visible=False)
-            cb = fig.colorbar(im_proxy, ax=ax, shrink=0.6)
-        else:
-            cb = fig.colorbar(im, ax=ax, shrink=0.6)
+#         if cb_contours and contours:
+#             cb.add_lines(conts)
 
-        if cb_contours and contours:
-            cb.add_lines(conts)
+#     # Judul
+#     if title:
+#         ax.set_title(title)
 
-    # Judul
-    if title:
-        ax.set_title(title)
-
-    return ax
+#     return ax
 # ===============================
 # Sidebar dan Menu Navigasi
 # ===============================
@@ -477,56 +479,57 @@ elif selected2 == "Map":
 
                 # Sidebar controls
                 st.sidebar.header("Oasis Montaj Style Options")
+                st.title("UNDERMAINTENANCE")
 
-                cmap_options = ['geosoft', 'jet', 'viridis', 'plasma', 'inferno', 'RdBu_r', 'bwr']
-                selected_cmap = st.sidebar.selectbox("Pilih Colormap", options=cmap_options, index=0)
+                # cmap_options = ['geosoft', 'jet', 'viridis', 'plasma', 'inferno', 'RdBu_r', 'bwr']
+                # selected_cmap = st.sidebar.selectbox("Pilih Colormap", options=cmap_options, index=0)
 
-                enable_hillshade = st.sidebar.checkbox("Gunakan Hillshade", value=True)
+                # enable_hillshade = st.sidebar.checkbox("Gunakan Hillshade", value=True)
 
-                hillshade_contrast = st.sidebar.slider("Kontras Hillshade", min_value=0.1, max_value=2.0, value=1.2,
-                                                       step=0.1)
+                # hillshade_contrast = st.sidebar.slider("Kontras Hillshade", min_value=0.1, max_value=2.0, value=1.2,
+                #                                        step=0.1)
 
-                blend_mode = st.sidebar.selectbox("Blend Mode", options=['alpha', 'hsv', 'overlay', 'soft'], index=0)
+                # blend_mode = st.sidebar.selectbox("Blend Mode", options=['alpha', 'hsv', 'overlay', 'soft'], index=0)
 
-                alpha_value = st.sidebar.slider("Transparansi Warna (Alpha)", min_value=0.0, max_value=1.0, value=0.7,
-                                                step=0.05)
+                # alpha_value = st.sidebar.slider("Transparansi Warna (Alpha)", min_value=0.0, max_value=1.0, value=0.7,
+                #                                 step=0.05)
 
-                contour_levels = st.sidebar.slider("Jumlah Kontur", min_value=5, max_value=50, value=24, step=1)
+                # contour_levels = st.sidebar.slider("Jumlah Kontur", min_value=5, max_value=50, value=24, step=1)
 
-                show_cb_contours = st.sidebar.checkbox("Tampilkan Kontur di Colorbar", value=False)
+                # show_cb_contours = st.sidebar.checkbox("Tampilkan Kontur di Colorbar", value=False)
 
-                # Plot dengan imshow_hs
-                fig_om, ax_om = plt.subplots(figsize=(12, 8))
+                # # Plot dengan imshow_hs
+                # fig_om, ax_om = plt.subplots(figsize=(12, 8))
 
-                imshow_hs(
-                    grid_z,
-                    ax=ax_om,
-                    cmap=selected_cmap,
-                    cmap_norm='equalize',
-                    hs=enable_hillshade,
-                    zf=5,
-                    azdeg=315,
-                    altdeg=45,
-                    dx=1, dy=1,
-                    hs_contrast=hillshade_contrast,
-                    cmap_brightness=1.0,
-                    blend_mode=blend_mode,
-                    alpha=alpha_value,
-                    contours=contour_levels,
-                    colorbar=True,
-                    cb_contours=show_cb_contours,
-                    title="Free Air Anomaly Map",
-                    origin='lower',
-                )
+                # imshow_hs(
+                #     grid_z,
+                #     ax=ax_om,
+                #     cmap=selected_cmap,
+                #     cmap_norm='equalize',
+                #     hs=enable_hillshade,
+                #     zf=5,
+                #     azdeg=315,
+                #     altdeg=45,
+                #     dx=1, dy=1,
+                #     hs_contrast=hillshade_contrast,
+                #     cmap_brightness=1.0,
+                #     blend_mode=blend_mode,
+                #     alpha=alpha_value,
+                #     contours=contour_levels,
+                #     colorbar=True,
+                #     cb_contours=show_cb_contours,
+                #     title="Free Air Anomaly Map",
+                #     origin='lower',
+                # )
 
-                # Titik pengukuran
-                if st.sidebar.checkbox("Show Measurement Points", value=True, key="points_om"):
-                    ax_om.scatter(df_filtered['Longitude'], df_filtered['Latitude'], color='white', s=10,
-                                  label="Measurement Points", edgecolors='black')
-                    ax_om.legend()
+                # # Titik pengukuran
+                # if st.sidebar.checkbox("Show Measurement Points", value=True, key="points_om"):
+                #     ax_om.scatter(df_filtered['Longitude'], df_filtered['Latitude'], color='white', s=10,
+                #                   label="Measurement Points", edgecolors='black')
+                #     ax_om.legend()
 
-                plt.tight_layout()
-                st.pyplot(fig_om)
+                # plt.tight_layout()
+                # st.pyplot(fig_om)
 
                 # Histogram tetap bisa ditampilkan
                 if st.checkbox("Show Histogram", value=True, key="hist_om"):
