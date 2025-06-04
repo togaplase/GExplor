@@ -10,3 +10,4 @@ scikit-image
 typing
 openpyxl
 Geopandas
+folium
