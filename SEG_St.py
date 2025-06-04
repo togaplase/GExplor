@@ -74,7 +74,49 @@ def save_gxf(grid_z, x_coords, y_coords, filename="output.gxf", no_data=-99999):
             f.write(" ".join([f"{val:.2f}" for val in row]) + "\n")
 
     return filename
+def add_hillshade(data, ax, cmap='viridis', hs=True, azdeg=315, altdeg=45,
+                  alpha=0.7, contours=24, show_contours=True):
+    """
+    Menambahkan hillshade dan kontur pada data grid.
 
+    Parameters:
+    - data: array 2D (grid_z)
+    - ax: matplotlib axis
+    - cmap: str, nama colormap
+    - hs: boolean, aktif/non-aktif hillshade
+    - azdeg: azimuth sudut cahaya
+    - altdeg: ketinggian cahaya
+    - alpha: transparansi warna
+    - contours: jumlah garis kontur
+    - show_contours: tampilkan kontur
+    """
+    # Hitung hillshade
+    dy, dx = np.gradient(data)
+    slope = np.arctan(np.sqrt(dx**2 + dy**2))
+    aspect = np.arctan2(dy, dx)
+
+    # Sudut pencahayaan
+    zenith_rad = np.radians(90 - altdeg)
+    azimuth_rad = np.radians(360 - azdeg + 90)
+
+    shaded = np.sin(zenith_rad) * np.sin(slope) + np.cos(zenith_rad) * np.cos(slope) * np.cos(azimuth_rad - aspect)
+    shaded = (shaded - shaded.min()) / (shaded.max() - shaded.min())
+
+    # Tambahkan hillshade
+    if hs:
+        ax.imshow(shaded, cmap='gray', alpha=0.5, origin='lower', extent=ax.get_xlim() + ax.get_ylim()[::-1])
+
+    # Plot data utama
+    im = ax.imshow(data, cmap=cmap, alpha=alpha, origin='lower', interpolation='bilinear',
+                   extent=ax.get_xlim() + ax.get_ylim()[::-1])
+
+    # Kontur
+    if show_contours and contours:
+        cs = ax.contour(data, levels=contours, colors='black', linewidths=0.5, alpha=0.8)
+        ax.clabel(cs, inline=True, fontsize=8, fmt="%.1f")
+
+    return im
+                      
 # ===============================
 # Sidebar dan Menu Navigasi
 # ===============================
@@ -319,70 +361,55 @@ elif selected2 == "Map":
             tab1, tab2 = st.tabs(["Standard Visualization", "UNDER-CONSTRUCTION"])
 
             with tab1:
-                st.subheader("Free Air Anomaly Map (Standard)")
-
-
-                # Hitung gradien untuk hillshade
-                gy, gx = np.gradient(grid_z)
-                hillshade = (np.sin(np.radians(315)) * gx + np.cos(np.radians(315)) * gy)
-                hillshade = (hillshade - hillshade.min()) / (hillshade.max() - hillshade.min())
-
+                st.subheader("Free Air Anomaly Map (Oasis Montaj Style)")
+            
+                # Sidebar Controls
+                st.sidebar.header("Visual Options")
+                cmap_options = ['RdBu_r', 'viridis', 'plasma', 'jet', 'coolwarm']
+                selected_cmap = st.sidebar.selectbox("Pilih Colormap", options=cmap_options, index=0)
+                enable_hillshade = st.sidebar.checkbox("Gunakan Hillshade", value=True)
+                contour_levels = st.sidebar.slider("Jumlah Garis Kontur", 5, 50, 20, step=1)
+                show_contours = st.sidebar.checkbox("Tampilkan Garis Kontur", value=True)
+                alpha_value = st.sidebar.slider("Transparansi Warna", 0.0, 1.0, 0.7, step=0.05)
+                show_points = st.sidebar.checkbox("Tampilkan Titik Pengukuran", value=True)
+            
                 fig, ax = plt.subplots(figsize=(12, 8))
-
-                # Plot hillshade sebagai background
-                ax.imshow(hillshade, extent=[grid_x.min(), grid_x.max(), grid_y.min(), grid_y.max()],
-                          cmap='gray', alpha=0.4, origin='lower')
-
-                # Plot utama: kontur warna
-                cs = ax.contourf(grid_x, grid_y, grid_z, cmap=colormap, levels=20, alpha=0.8)
-                cbar = fig.colorbar(cs, ax=ax, label="Free Air Anomaly (mGal)")
-
-
-                    
-                show_contour_lines = st.checkbox("Show Contour Lines", value=True, key="contour_std")
-                show_points = st.checkbox("Show Measurement Points", value=True, key="points_std")
-
-                # Plot kontur garis
-                if show_contour_lines:
-                    cs_lines = ax.contour(grid_x, grid_y, grid_z, colors='black', linewidths=0.5, levels=10)
-                    ax.clabel(cs_lines, inline=True, fontsize=8)
-
+            
+                # Dummy imshow untuk mendapatkan extent
+                im = ax.imshow(grid_z, cmap='viridis', alpha=0)
+                plt.close(fig)  # Tutup agar tidak double plot
+            
+                # Tambahkan peta dengan hillshade dan kontur
+                fig, ax = plt.subplots(figsize=(12, 8))
+                im = add_hillshade(grid_z, ax=ax, cmap=selected_cmap, hs=enable_hillshade,
+                                   alpha=alpha_value, contours=contour_levels, show_contours=show_contours)
+            
+                # Colorbar
+                cbar = fig.colorbar(im, ax=ax, label="Free Air Anomaly (mGal)")
+            
                 # Titik pengukuran
                 if show_points:
-                    ax.scatter(df_filtered['Longitude'], df_filtered['Latitude'], color='black', s=10,
-                               label="Measurement Points")
+                    ax.scatter(df_filtered['Longitude'], df_filtered['Latitude'], color='white', edgecolor='black',
+                               s=10, label="Measurement Points")
                     ax.legend()
-                
+            
+                ax.set_title("Free Air Anomaly Map (Style Oasis Montaj)")
                 ax.set_xlabel("Longitude")
                 ax.set_ylabel("Latitude")
-                ax.set_title("Free Air Anomaly Map with Hillshade")
+                ax.axis('image')  # Agar aspek rasio sesuai
                 plt.tight_layout()
                 st.pyplot(fig)
-
-                # Histogram
-                if st.checkbox("Show Histogram", value=True, key="hist_std"):
-                    st.subheader("Distribution of Free Air Anomaly Values")
-                    fig_hist, ax_hist = plt.subplots()
-                    ax_hist.hist(values, bins=30, color='skyblue', edgecolor='black')
-                    ax_hist.set_xlabel("Free Air Anomaly (mGal)")
-                    ax_hist.set_ylabel("Frequency")
-                    ax_hist.set_title("Histogram of Anomaly Values")
-                    st.pyplot(fig_hist)
-
-
-
-        else:
-            st.warning("Kolom yang dibutuhkan untuk perhitungan FAA tidak tersedia.")
-
-        buf = io.BytesIO()
-        fig.savefig(buf, format="png")
-        st.download_button(
-            label="🖼️ Download Peta sebagai PNG",
-            data=buf.getvalue(),
-            file_name="peta_anomali.png",
-            mime="image/png"
-        )
-
+            
+                # Tombol Download Gambar
+                buf = io.BytesIO()
+                fig.savefig(buf, format="png", dpi=300, bbox_inches='tight')
+                st.download_button(
+                    label="🖼️ Download Peta sebagai PNG",
+                    data=buf.getvalue(),
+                    file_name="faa_oasis_style_map.png",
+                    mime="image/png"
+                )
+            
 
 
     if st.sidebar.checkbox("Simple Bouguer Anomaly Map"):
