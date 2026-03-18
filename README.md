@@ -36,3 +36,18 @@ Sebelum menjalankan aplikasi ini, pastikan Anda telah menginstal:
 3. Jalankan aplikasi Streamlit:
 
    streamlit run SEG_St.py
+
+
+# GExplor
+
+GExplor is a Python-based application for gravity data processing, correction, and interactive mapping.
+
+## 📄 Publication
+
+This repository is associated with the following paper:
+
+**GExplor: Comprehensive Gravity Exploration with Data Processing and Interactive Mapping**
+
+Published in IOP Conference Series: Earth and Environmental Science  
+Joint Convention Semarang 2025  
+DOI: https://doi.org/10.1088/1755-1315/1590/1/012001
